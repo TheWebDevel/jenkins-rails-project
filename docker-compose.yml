@@ -1,0 +1,50 @@
+version: "2"
+services:
+  db:
+    image: "mysql:5.7"
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: hellonext
+  redis:
+    image: "redis:4.0-alpine"
+    command: redis-server
+    volumes:
+      - "redis:/data"
+
+  website:
+    depends_on:
+      - "db"
+      - "redis"
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ".:/app"
+
+  sidekiq:
+    depends_on:
+      - "db"
+      - "redis"
+    build: .
+    command: sidekiq -C config/sidekiq.yml
+    volumes:
+      - ".:/app"
+    environment:
+      REDIS_URL: redis://redis:6379/0
+
+  cable:
+    depends_on:
+      - "redis"
+    build: .
+    command: puma -p 28080 cable/config.ru
+    ports:
+      - "28080:28080"
+    volumes:
+      - ".:/app"
+
+volumes:
+  redis:
+  db:
