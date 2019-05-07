@@ -1,4 +1,4 @@
-FROM ruby:2.5-alpine
+FROM ruby:2.6-alpine
 
 RUN apk update && apk upgrade && \
     apk add ruby ruby-json ruby-io-console ruby-bundler ruby-irb ruby-bigdecimal tzdata postgresql-dev && \
@@ -10,6 +10,7 @@ RUN mkdir /app
 WORKDIR /app
 
 COPY Gemfile Gemfile.lock ./
+RUN gem install bundler:2.0.1
 RUN gem install ovirt-engine-sdk -v '4.3.0' --source 'https://rubygems.org/'
 RUN bundle install --binstubs
 
